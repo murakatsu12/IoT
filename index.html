@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ポトス監視ダッシュボード</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="font-family: sans-serif; background-color: #f4f7f6; padding: 20px;">
+    <h1 style="text-align: center; color: #2c3e50;">🌿 ポトス監視データ (直近24時間)</h1>
+    
+    <div style="width: 90%; max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        <canvas id="chart"></canvas>
+    </div>
+
+    <script>
+        // あなたのGASのURLに差し替えてください
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbw-VpBc_zdOtEmRQok8LarwGwlzibfwsuRDG0oZv5Gw_-pO7QV-I6m47uAQ_3ZclqFI/exec";
+
+        fetch(GAS_URL)
+        .then(res => res.json())
+        .then(data => {
+            const now = new Date();
+            const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+
+            // 24時間以内のデータを抽出
+            const filteredData = data.filter(d => {
+                const itemDate = new Date(d.time);
+                return !isNaN(itemDate) && itemDate >= twentyFourHoursAgo;
+            });
+
+            // データの整形
+            const labels = filteredData.map(d => {
+                return new Date(d.time).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+            });
+            
+            // GAS側の変数名に合わせて取得 (soil_moisture と temperature)
+            const soilValues = filteredData.map(d => d.soil_moisture);
+            const tempValues = filteredData.map(d => d.temperature);
+
+            new Chart(document.getElementById("chart"), {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "土壌水分 (%)",
+                            data: soilValues,
+                            borderColor: "#3498db",
+                            backgroundColor: "rgba(52, 152, 219, 0.1)",
+                            yAxisID: 'y-soil',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: "温度 (℃)",
+                            data: tempValues,
+                            borderColor: "#e74c3c",
+                            backgroundColor: "transparent",
+                            yAxisID: 'y-temp',
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        'y-soil': {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            min: 0,
+                            max: 100,
+                            title: { display: true, text: '水分量 (%)', color: '#3498db' }
+                        },
+                        'y-temp': {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            min: 0,
+                            max: 40, // 気温に合わせて調整
+                            grid: { drawOnChartArea: false }, // 右側のグリッド線を消してスッキリさせる
+                            title: { display: true, text: '温度 (℃)', color: '#e74c3c' }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('エラー:', error));
+    </script>
+</body>
+</html>
