@@ -23,7 +23,7 @@ pump.value = PUMP_OFF
 # --- 設定 ---
 GAS_URL = "https://script.google.com/macros/s/AKfycbw-VpBc_zdOtEmRQok8LarwGwlzibfwsuRDG0oZv5Gw_-pO7QV-I6m47uAQ_3ZclqFI/exec"
 SOIL_THRESHOLD_PC = 20
-WATERING_TIME = 600
+WATERING_TIME = 3
 
 def get_soil_percent(raw_value):
     # 土の中での「湿っている」に合わせて数値を調整
@@ -53,7 +53,7 @@ def main():
             except Exception as e:
                 print(f"送信失敗: {e}")
 
-            time.sleep(60)
+            time.sleep(600)
     except KeyboardInterrupt:
         pass
     finally:
