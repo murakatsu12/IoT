@@ -28,13 +28,21 @@
                 return !isNaN(itemDate) && itemDate >= twentyFourHoursAgo;
             });
 
+            // 変換用の関数
+            function calculatePercent(raw) {
+                const WET_MAX = 35000; // 水の中（100%）
+                const DRY_MIN = 56300; // 空気中（0%）
+                let percent = (DRY_MIN - raw) / (DRY_MIN - WET_MAX) * 100;
+                return Math.max(0, Math.min(100, Math.round(percent))); // 0-100の間に収める
+            }
+
             // データの整形
             const labels = filteredData.map(d => {
                 return new Date(d.time).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
             });
-            
-            // GAS側の変数名に合わせて取得 (soil_moisture と temperature)
-            const soilValues = filteredData.map(d => d.soil_moisture);
+
+            // 取得した生の値(d.soil_moisture)を関数に通して%にする
+            const soilValues = filteredData.map(d => calculatePercent(d.soil_moisture));
             const tempValues = filteredData.map(d => d.temperature);
 
             new Chart(document.getElementById("chart"), {

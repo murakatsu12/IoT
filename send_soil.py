@@ -47,7 +47,7 @@ def main():
                 pump.value = PUMP_OFF
 
             # GAS送信 (名前をGAS側の変数と一致させる)
-            payload = {"temperature": round(temp, 1), "soil_moisture": soil_pc}
+            payload = {"temperature": round(temp, 1), "soil_moisture": soil_sensor.value}
             try:
                 requests.post(GAS_URL, json=payload, timeout=10)
             except Exception as e:
